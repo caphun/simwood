@@ -3,3 +3,25 @@ Simwood API Connector v0.0.1
 
 This is very early alpha code so there are many holes to fill and you might even find major bugs.
 Please be aware we are actively developing this code so check back often and use at your own risk!
+
+Usage Example 1
+---------------
+
+Token based Authentication
+
+<code>
+// write form posts into a variable container
+$auth = $_POST['auth'];
+
+// call simwood class and pass in form data
+$simwood = new simwood(
+	array(
+		'user' => $auth['user'], 
+		'password' => $auth['pass'], 
+		'output' => 'json'
+	)
+);
+
+// get token
+$token = $simwood->get_auth_token();
+</code>
