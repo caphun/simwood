@@ -121,7 +121,7 @@ class simwood {
             $response = $this->response['AUTH'];
             
             // TODO: check whether authentication is valid before returning a token
-            if ($response->status === 1) {
+            if ($response->status == 1) {
                 $token = $response->results->token;
                 // save token to session
                 $_SESSION['token'] = $token;
@@ -139,22 +139,23 @@ class simwood {
     // revoke authentication token
     function revoke_auth_token() {
         // get token from session
-        $token = $this->get_auth_token();
-        
-        // get client ip
-        $ip = $this->request("{$this->options['api_url']}?mode=MYIP", array('output'=> 'json',));
-        $clientip = $ip->results->ip;
-        
-        // revoke token
-        $response = $this->request("{$this->options['api_url']}?mode=DEAUTH", array(
-          'user' => $this->options['user'],
-          'token' => $token,
-          'key' => htmlspecialchars(sha1($clientip.$token.$this->options['password'])),
-          'output' => 'json',
-        ));
-        
-        // write response into response array
-        $this->response['DEAUTH'] = $response;
+        $token = isset($_SESSION['token']) ? $_SESSION['token'] : null;
+        if ($token) {
+            // get client ip
+            $ip = $this->request("{$this->options['api_url']}?mode=MYIP", array('output'=> 'json',));
+            $clientip = $ip->results->ip;
+
+            // revoke token
+            $response = $this->request("{$this->options['api_url']}?mode=DEAUTH", array(
+              'user' => $this->options['user'],
+              'token' => $token,
+              'key' => htmlspecialchars(sha1($clientip.$token.$this->options['password'])),
+              'output' => 'json',
+            ));
+
+            // write response into response array
+            $this->response['DEAUTH'] = $response;
+        }
 
         unset($_SESSION['token']);
         
