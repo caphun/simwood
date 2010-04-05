@@ -39,12 +39,14 @@ class simwood {
     function __construct($options = null) {
         
         $this->options = array_merge(array(
-            'api_url' => "http://ws.simwood.com/REST.php",
+            'api_url' => "http://ws.simwood.com/REST2.php",
             'threshold' => 60,
             'user' => null,
             'password' => null,
             'output' => 'xml',
         ), $options);
+
+        // TODO: get user/pass from session if null
         
         return $this;
     }
@@ -72,7 +74,7 @@ class simwood {
                         $request['params'], 
                         array(
                             'token' => $token,
-                            'output' => $this->options['output'],
+                            'output' => $this->options['output']
                         )
                     )
                 );
@@ -82,7 +84,7 @@ class simwood {
             $output = $this->response;
         } else {
             $output = array(
-                'ERROR': 'Could not authenticate you',
+                'ERROR' => 'Could not authenticate you',
             );
         }
         
@@ -97,29 +99,35 @@ class simwood {
     function get_auth_token() {
         if (!isset($_SESSION['token'])) {
             // get client ip
-            $ip = $this->request("{$this->options['api_url']}?mode=MYIP", array('output'=> 'json',));
-
+            $this->request("{$this->options['api_url']}?mode=MYIP", array('output'=> 'json',));
+            $ip = $this->response['MYIP'];
+            
             // get time
-            $timestamp = $this->request("{$this->options['api_url']}?mode=TIME", array('output'=> 'json',));
+            $this->request("{$this->options['api_url']}?mode=TIME", array('output'=> 'json',));
+            $timestamp = $this->response['TIME'];
 
-            $clientip = json_decode($ip)->results->ip;
-            $expiry = json_decode($timestamp)->results->timestamp + $this->options['threshold']; // expiry = time + 60 seconds
+            $clientip = $ip->results->ip;
+            $expiry = $timestamp->results->timestamp + $this->options['threshold']; // expiry = time + 60 seconds
 
             $key=htmlspecialchars(sha1($clientip.$expiry.$this->options['password']));
-
+            
             // authenticate
-            $response = $this->request("{$this->options['api_url']}?mode=AUTH", array(
+            $this->request("{$this->options['api_url']}?mode=AUTH", array(
               'user'=> $this->options['user'],
               'expiry' => $expiry,
               'key' => $key,
               'output'=> 'json',
             ));
-
+            $response = $this->response['AUTH'];
+            
             // TODO: check whether authentication is valid before returning a token
-            $token = json_decode($response)->results->token;
-
-            // save token to session
-            $_SESSION['token'] = $token;
+            if ($response->status === 1) {
+                $token = $response->results->token;
+                // save token to session
+                $_SESSION['token'] = $token;
+            } else {
+                $token = null;
+            }
         } else {
             $token = $_SESSION['token'];
         }
@@ -135,7 +143,7 @@ class simwood {
         
         // get client ip
         $ip = $this->request("{$this->options['api_url']}?mode=MYIP", array('output'=> 'json',));
-        $clientip = json_decode($ip)->results->ip;
+        $clientip = $ip->results->ip;
         
         // revoke token
         $response = $this->request("{$this->options['api_url']}?mode=DEAUTH", array(
@@ -147,6 +155,8 @@ class simwood {
         
         // write response into response array
         $this->response['DEAUTH'] = $response;
+
+        unset($_SESSION['token']);
         
         return $this;
     }
@@ -163,12 +173,14 @@ class simwood {
         //$info = curl_getinfo($ch);
         //$result['http_code'];
         curl_close ($ch);
-        
+
         // get mode
-        $mode = 'MYIP'; // TODO: get mode from $url
-        
+        $parts = parse_url($url);
+        parse_str($parts['query'], $params);
+        $mode = $params['mode'];
+
         // write response into response array
-        $this->response[$mode] = $result;
+        $this->response[$mode] = isset($options['output']) && $options['output'] === 'json' ? json_decode($result) : $results;
         
         // return self
         return $this;
