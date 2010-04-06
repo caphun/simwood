@@ -19,7 +19,7 @@ Token based Authentication:
 	);
 	
 	// call simwood class and pass in options data
-	$simwood = Simwood::getInstance($options);
+	$simwood = Simwood::get_instance($options);
 
 	// get token
 	$token = $simwood->get_auth_token();
