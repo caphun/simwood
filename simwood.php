@@ -35,7 +35,7 @@ class Simwood {
     var $request = array();
     var $response = array();
 
-	private static $instance;
+    private static $instance;
     
     // constructor
     private function __construct($options = null) {
@@ -53,15 +53,15 @@ class Simwood {
         return $this;
     }
     
-	public function get_instance($options = null) {
+    public function get_instance($options = null) {
         if (!self::$instance) 
         { 
             self::$instance = new Simwood($options);
         } 
 
-        return self::$instance;		
-	}
-	
+        return self::$instance;     
+    }
+    
     function get($mode, $options = null) {
         // build request queque
         $this->request[] = array('url' => "{$this->options['api_url']}?mode={$mode}", 'params' => $options);
