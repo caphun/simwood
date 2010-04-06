@@ -41,7 +41,7 @@ class Simwood {
     private function __construct($options = null) {
         
         $this->options = array_merge(array(
-            'api_url' => "http://ws.simwood.com/REST2.php",
+            'api_url' => "http://ws.simwood.com/REST.php",
             'threshold' => 3600 * 24, // 1 day
             'user' => null,
             'password' => null,
@@ -109,19 +109,10 @@ class Simwood {
     // authentication
     function get_auth_token() {
         if (!isset($_SESSION['token'])) {
-            // get client ip
-            $this->request("{$this->options['api_url']}?mode=MYIP", array('output'=> 'json',));
-            $ip = $this->response['MYIP'];
-            
-            // get time
-            $this->request("{$this->options['api_url']}?mode=TIME", array('output'=> 'json',));
-            $timestamp = $this->response['TIME'];
+	
+            $key = $this->get_auth_key();
+            $expiry = $this->response['TIME']->results->timestamp + $this->options['threshold'];
 
-            $clientip = $ip->results->ip;
-            $expiry = $timestamp->results->timestamp + $this->options['threshold']; // expiry = time + 60 seconds
-
-            $key=htmlspecialchars(sha1($clientip.$expiry.$this->options['password']));
-            
             // authenticate
             $this->request("{$this->options['api_url']}?mode=AUTH", array(
               'user'=> $this->options['user'],
@@ -152,26 +143,42 @@ class Simwood {
         // get token from session
         $token = isset($_SESSION['token']) ? $_SESSION['token'] : null;
         if ($token) {
-            // get client ip
-            $ip = $this->request("{$this->options['api_url']}?mode=MYIP", array('output'=> 'json',));
-            $clientip = $ip->results->ip;
-
             // revoke token
-            $response = $this->request("{$this->options['api_url']}?mode=DEAUTH", array(
+            $this->request("{$this->options['api_url']}?mode=DEAUTH", array(
               'user' => $this->options['user'],
               'token' => $token,
-              'key' => htmlspecialchars(sha1($clientip.$token.$this->options['password'])),
+              'key' => $this->get_deauth_key(),
               'output' => 'json',
             ));
-
-            // write response into response array
-            $this->response['DEAUTH'] = $response;
         }
 
         unset($_SESSION['token']);
         
         return $this;
     }
+
+	function get_auth_key() {
+        // get client ip
+        $this->request("{$this->options['api_url']}?mode=MYIP", array('output'=> 'json',));
+        $ip = $this->response['MYIP'];
+        
+        // get time
+        $this->request("{$this->options['api_url']}?mode=TIME", array('output'=> 'json',));
+        $timestamp = $this->response['TIME'];
+
+        $clientip = $ip->results->ip;
+        $expiry = $timestamp->results->timestamp + $this->options['threshold'];
+
+		return htmlspecialchars(sha1($clientip.$expiry.$this->options['password']));
+	}
+	
+	function get_deauth_key() {
+        // get client ip
+        $ip = $this->request("{$this->options['api_url']}?mode=MYIP", array('output'=> 'json',));
+        $clientip = $ip->results->ip;
+		$token = isset($_SESSION['token']) ? $_SESSION['token'] : null;
+		return htmlspecialchars(sha1($clientip.$token.$this->options['password']));
+	}
     
     // curl request
     function request($url, $options = null) {
