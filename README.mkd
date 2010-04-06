@@ -8,10 +8,10 @@ Example usage 1
 ---------------
 Token based Authentication:
 
-	// write form posts into a variable container
+	// write posts data into a variable container
 	$auth = $_POST['auth'];
 	
-	// simwood options
+	// create options array
 	$options = array(
 		'user' => $auth['user'], 
 		'password' => $auth['pass'], 
