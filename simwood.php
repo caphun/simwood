@@ -29,18 +29,20 @@
  * @version v0.0.1
  */
 
-class simwood {
+class Simwood {
 
     var $options = array();
     var $request = array();
     var $response = array();
+
+	private static $instance;
     
     // constructor
-    function __construct($options = null) {
+    private function __construct($options = null) {
         
         $this->options = array_merge(array(
             'api_url' => "http://ws.simwood.com/REST2.php",
-            'threshold' => 60,
+            'threshold' => 3600 * 24, // 1 day
             'user' => null,
             'password' => null,
             'output' => 'xml',
@@ -51,6 +53,15 @@ class simwood {
         return $this;
     }
     
+	public function get_instance($options = null) {
+        if (!self::$instance) 
+        { 
+            self::$instance = new Simwood($options);
+        } 
+
+        return self::$instance;		
+	}
+	
     function get($mode, $options = null) {
         // build request queque
         $this->request[] = array('url' => "{$this->options['api_url']}?mode={$mode}", 'params' => $options);
