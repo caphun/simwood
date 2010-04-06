@@ -28,6 +28,7 @@ Token based Authentication:
 Example usage 2
 ---------------
 Get account balance:
+
 	// get options
 	$options = array(
 		'token' => "0c4fb20a9dbffac185d467262d8abe53a94aae5e",
