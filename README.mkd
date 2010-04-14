@@ -4,6 +4,15 @@ Simwood API Connector v0.0.1
 This is very early alpha code so there are many holes to fill and you might even find major bugs.
 Please be aware we are actively developing this code so check back often and use at your own risk!
 
+Prerequisites
+-------------
+
+Before you could take advantage of this API class you need to Order API access. 
+Please visit the following documentation for more details.
+
+http://kb.simwood.com/account-management/order-services/order-api-access
+
+
 Example usage 1
 ---------------
 Token based Authentication:
