@@ -7,10 +7,7 @@ Please be aware we are actively developing this code so check back often and use
 Prerequisites
 -------------
 
-Before you could take advantage of this API class you need to Order API access. 
-Please visit the following documentation for more details.
-
-http://kb.simwood.com/account-management/order-services/order-api-access
+Before you could take advantage of this API class you need to [Order API access](http://kb.simwood.com/account-management/order-services/order-api-access "Order API access").
 
 
 Example usage 1
