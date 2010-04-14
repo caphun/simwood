@@ -38,7 +38,7 @@ class Simwood {
     private static $instance;
     
     // constructor
-    private function __construct($options = null) {
+    private function __construct($options = array()) {
         
         $this->options = array_merge(array(
             'api_url' => "http://ws.simwood.com/REST.php",
@@ -53,7 +53,7 @@ class Simwood {
         return $this;
     }
     
-    public function get_instance($options = null) {
+    public function get_instance($options = array()) {
         if (!self::$instance) 
         { 
             self::$instance = new Simwood($options);
@@ -62,7 +62,7 @@ class Simwood {
         return self::$instance;     
     }
     
-    function get($mode, $options = null) {
+    function get($mode, $options = array()) {
         // build request queque
         $this->request[] = array('url' => "{$this->options['api_url']}?mode={$mode}", 'params' => $options);
         // return self
@@ -158,26 +158,27 @@ class Simwood {
     }
 
 	function get_auth_key() {
-        // get client ip
-        $this->request("{$this->options['api_url']}?mode=MYIP", array('output'=> 'json',));
-        $ip = $this->response['MYIP'];
-        
         // get time
         $this->request("{$this->options['api_url']}?mode=TIME", array('output'=> 'json',));
         $timestamp = $this->response['TIME'];
 
-        $clientip = $ip->results->ip;
+        $clientip = $this->get_my_ip();
         $expiry = $timestamp->results->timestamp + $this->options['threshold'];
 
 		return htmlspecialchars(sha1($clientip.$expiry.$this->options['password']));
 	}
 	
 	function get_deauth_key() {
-        // get client ip
-        $ip = $this->request("{$this->options['api_url']}?mode=MYIP", array('output'=> 'json',));
-        $clientip = $ip->results->ip;
+		$clientip = $this->get_my_ip();
 		$token = isset($_SESSION['token']) ? $_SESSION['token'] : null;
 		return htmlspecialchars(sha1($clientip.$token.$this->options['password']));
+	}
+	
+	function get_my_ip() {
+        // get client ip
+        $this->request("{$this->options['api_url']}?mode=MYIP", array('output'=> 'json',));
+        $ip = $this->response['MYIP'];
+		return $ip->results->ip;
 	}
     
     // curl request
