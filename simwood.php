@@ -177,8 +177,7 @@ class Simwood {
 	function get_my_ip() {
         // get client ip
         $this->request("{$this->options['api_url']}?mode=MYIP", array('output'=> 'json',));
-        $ip = $this->response['MYIP'];
-		return $ip->results->ip;
+		return $this->response['MYIP']->results->ip;
 	}
     
     // curl request
